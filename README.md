@@ -101,21 +101,39 @@ Run the starter tests with:
 pytest
 ```
 
-You can add more tests in `tests/test_recommender.py`.
+Current result:
+
+```text
+$ python -B -m pytest -q -p no:cacheprovider
+....                                                                     [100%]
+4 passed in 0.03s
+```
 
 ---
 
 ## Sample Recommendation Output
 
-Paste a sample of your recommender's output here as a text block so a reader can see what it produces:
+```text
+$ python -B -m src.main
+Loaded songs: 18
+User profile: genre=pop, mood=happy, energy=0.8, valence=0.8, likes_acoustic=False
 
-```
-# e.g.:
-# User profile: genre=indie, mood=chill, energy=low
-# Recommendations:
-#   1. ...
-#   2. ...
-#   3. ...
+Top recommendations:
+
+1. Sunrise City by Neon Echo - Score: 5.70
+Because: genre match (+2.00); mood match (+1.50); energy closeness (+0.98); valence closeness (+0.72); acoustic preference match (+0.50)
+
+2. Gym Hero by Max Pulse - Score: 4.10
+Because: genre match (+2.00); energy closeness (+0.87); valence closeness (+0.73); acoustic preference match (+0.50)
+
+3. Rooftop Lights by Indigo Parade - Score: 3.70
+Because: mood match (+1.50); energy closeness (+0.96); valence closeness (+0.74); acoustic preference match (+0.50)
+
+4. Desert Bloom by Maya Sol - Score: 2.08
+Because: energy closeness (+0.88); valence closeness (+0.70); acoustic preference match (+0.50)
+
+5. Thunder Arcade by Pixel Riot - Score: 2.07
+Because: energy closeness (+0.84); valence closeness (+0.73); acoustic preference match (+0.50)
 ```
 
 **Screenshot or video** *(optional)*: <!-- Insert a screenshot or demo video link here -->

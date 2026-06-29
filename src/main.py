@@ -9,11 +9,11 @@ You will implement the functions in recommender.py:
 - recommend_songs
 """
 
-from recommender import load_songs, recommend_songs
+from src.recommender import load_songs, recommend_songs
 
 
 def main() -> None:
-    songs = load_songs("data/songs.csv") 
+    songs = load_songs("data/songs.csv")
 
     # Phase 2 default taste profile for the first scoring design.
     user_prefs = {
@@ -26,12 +26,17 @@ def main() -> None:
 
     recommendations = recommend_songs(user_prefs, songs, k=5)
 
+    print(f"Loaded songs: {len(songs)}")
+    print(
+        "User profile: "
+        f"genre={user_prefs['genre']}, mood={user_prefs['mood']}, "
+        f"energy={user_prefs['energy']}, valence={user_prefs['valence']}, "
+        f"likes_acoustic={user_prefs['likes_acoustic']}"
+    )
     print("\nTop recommendations:\n")
-    for rec in recommendations:
-        # You decide the structure of each returned item.
-        # A common pattern is: (song, score, explanation)
+    for rank, rec in enumerate(recommendations, start=1):
         song, score, explanation = rec
-        print(f"{song['title']} - Score: {score:.2f}")
+        print(f"{rank}. {song['title']} by {song['artist']} - Score: {score:.2f}")
         print(f"Because: {explanation}")
         print()
 
