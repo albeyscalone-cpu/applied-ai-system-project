@@ -105,8 +105,8 @@ Current result:
 
 ```text
 $ python -B -m pytest -q -p no:cacheprovider
-....                                                                     [100%]
-4 passed in 0.03s
+.....                                                                    [100%]
+5 passed in 0.03s
 ```
 
 ---
@@ -209,10 +209,16 @@ Read and complete `model_card.md`:
 
 [**Model Card**](model_card.md)
 
-Write 1 to 2 paragraphs here about what you learned:
+This project helped me see how recommendation systems turn a small set of
+features into something that feels like a prediction. Even with a tiny dataset,
+the scoring rules were enough to make the top recommendation often feel
+reasonable, especially when the profile had a clear genre and mood target. It
+also made the connection between feature design and output much more obvious to
+me than when I use a polished real app.
 
-- about how recommenders turn data into predictions
-- about where bias or unfairness could show up in systems like this
-
-
+The biggest lesson about bias was how easy it is for the system to overvalue the
+features it can measure. My recommender does not know anything about lyrics,
+memory, cultural context, or why a user likes a song, so it can over-rank
+tracks that merely share similar energy and valence. Building and testing the
+weight-shift experiment made that limitation feel very concrete.
 

@@ -2,48 +2,42 @@
 
 ## 1. Model Name  
 
-Give your model a short, descriptive name.  
-Example: **VibeFinder 1.0**  
+**VibePulse 1.0**
 
 ---
 
 ## 2. Intended Use  
 
-Describe what your recommender is designed to do and who it is for. 
-
-Prompts:  
-
-- What kind of recommendations does it generate  
-- What assumptions does it make about the user  
-- Is this for real users or classroom exploration  
+This recommender is designed to generate classroom-style music suggestions based
+on a small set of song features. It assumes the user can be described by a few
+simple preferences such as favorite genre, favorite mood, target energy, target
+valence, and whether they like acoustic songs. It is meant for learning how a
+ranking system works, not for real production users.
 
 ---
 
 ## 3. How the Model Works  
 
-Explain your scoring approach in simple language.  
-
-Prompts:  
-
-- What features of each song are used (genre, energy, mood, etc.)  
-- What user preferences are considered  
-- How does the model turn those into a score  
-- What changes did you make from the starter logic  
-
-Avoid code here. Pretend you are explaining the idea to a friend who does not program.
+The model looks at each song one at a time and compares it to the listener
+profile. It checks whether the genre matches, whether the mood matches, how
+close the song's energy is to the user's target energy, how close the valence
+is to the user's target valence, and whether the song's acousticness fits the
+user's acoustic preference. Each of those checks adds points to a total score.
+After every song gets a score, the system sorts the list from highest to lowest
+and returns the top results with plain-language reasons. Compared with the
+starter code, I implemented the CSV loader, the scoring logic, the ranking
+function, explanation strings, and a way to test alternative weights.
 
 ---
 
 ## 4. Data  
 
-Describe the dataset the model uses.  
-
-Prompts:  
-
-- How many songs are in the catalog  
-- What genres or moods are represented  
-- Did you add or remove data  
-- Are there parts of musical taste missing in the dataset  
+The catalog contains 18 songs. It includes genres like pop, lofi, rock,
+ambient, jazz, synthwave, indie pop, latin, edm, folk, hip hop, rnb, indie,
+and punk. I expanded the starter dataset so there would be more variety in mood
+and genre testing. Even with that expansion, the data still leaves out a lot of
+real musical taste, including lyrics, language, popularity, social context,
+repeat listening behavior, and how taste changes over time.
 
 ---
 
@@ -87,23 +81,26 @@ system is quite sensitive to the weight choices.
 
 ## 8. Future Work  
 
-Ideas for how you would improve the model next.  
-
-Prompts:  
-
-- Additional features or preferences  
-- Better ways to explain recommendations  
-- Improving diversity among the top results  
-- Handling more complex user tastes  
+If I kept building this, I would add more user preference fields such as tempo
+range, favorite artists, and disliked genres. I would also add a diversity rule
+so the top five recommendations do not cluster around one artist or one narrow
+sound. Another improvement would be better explanations that compare one song
+against another instead of only listing score reasons for a single track.
 
 ---
 
 ## 9. Personal Reflection  
 
-A few sentences about your experience.  
+My biggest takeaway was that a recommender can feel convincing even when the
+logic behind it is pretty small. A few weighted comparisons were enough to make
+the top result often feel plausible, which helped me understand why
+recommendation apps can seem smart even when they are simplifying a lot. What
+surprised me most was how sensitive the output was to weight changes. Small
+adjustments to genre or energy could move songs around quickly, which made the
+system feel less objective than it first appeared.
 
-Prompts:  
-
-- What you learned about recommender systems  
-- Something unexpected or interesting you discovered  
-- How this changed the way you think about music recommendation apps  
+Working on this also changed how I think about real music apps. I now pay more
+attention to the possibility that a platform is reinforcing one narrow version
+of my taste because of the features it chose to measure. AI tools helped me move
+faster when implementing and testing ideas, but I still had to verify the
+results carefully and decide whether the rankings actually made sense.
