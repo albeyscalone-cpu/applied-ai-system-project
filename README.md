@@ -27,6 +27,18 @@ trust, test, and explain.
 
 ---
 
+## Applied AI Feature: Reliability Mechanism
+
+The substantial new feature is a reliability mechanism integrated into the
+recommendation workflow. It validates every user profile before scoring,
+calculates a transparent confidence estimate after ranking, and displays
+warnings when the catalog is small or the top scores are too close to treat as a
+clear preference. A separate evaluation harness uses the same recommender to
+check expected results for predefined profiles and to confirm invalid input is
+rejected safely.
+
+---
+
 ## How The System Works
 
 Real recommendation platforms combine many signals. Collaborative filtering
@@ -68,18 +80,19 @@ user_prefs = {
 Data flow sketch:
 
 ```text
-User profile -> validation guardrail -> CSV song catalog -> scoring and ranking
--> confidence assessment -> recommendations and review warnings
+User profile -> validation guardrail --\
+                                    -> scoring and ranking -> confidence assessment
+CSV song catalog -> catalog loader --/                         -> recommendations and review warnings
 ```
 
 ### Architecture Overview
 
-The system first checks that profile values are valid for the catalog's 0.0 to
-1.0 numeric features. It then scores each song, ranks the results, and measures
-how strongly the top result is supported by the scoring signals and how far it
-is from the next result. The confidence score is a ranking-quality signal, not
-a claim that a person will definitely enjoy a song. Small catalogs and very
-close rankings produce warnings for the user to review.
+The system loads the CSV catalog and checks that profile values are valid for
+the catalog's 0.0 to 1.0 numeric features. It then scores each song, ranks the
+results, and measures how strongly the top result is supported by the scoring
+signals and how far it is from the next result. The confidence score is a
+ranking-quality signal, not a claim that a person will definitely enjoy a song.
+Small catalogs and very close rankings produce warnings for the user to review.
 
 The editable Mermaid source is available in
 [`diagrams/architecture.mmd`](diagrams/architecture.mmd).
@@ -291,4 +304,18 @@ features it can measure. My recommender does not know anything about lyrics,
 memory, cultural context, or why a user likes a song, so it can over-rank
 tracks that merely share similar energy and valence. Building and testing the
 weight-shift experiment made that limitation feel very concrete.
+
+---
+
+## Presentation and Portfolio
+
+The text-only 5-7 minute presentation script and live-demo commands are in
+[**PRESENTATION_NOTES.md**](PRESENTATION_NOTES.md).
+
+GitHub portfolio artifact:
+[albeyscalone-cpu/applied-ai-system-project](https://github.com/albeyscalone-cpu/applied-ai-system-project)
+
+This project shows that I can take an understandable prototype, add reliability
+checks and guardrails, and explain the system's limitations clearly instead of
+treating a confident-looking output as unquestionable.
 

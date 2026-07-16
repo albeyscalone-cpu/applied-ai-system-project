@@ -1,8 +1,11 @@
 flowchart TD
     A[User Profile Input] --> B[Input Validation Guardrail]
-    B --> C[Load Song Catalog]
-    C --> D[Score and Rank Songs]
+    C[CSV Song Catalog] --> D[Score and Rank Songs]
+    B --> D
     D --> E[Confidence and Warning Assessment]
     E --> F[Recommendation Output]
     F --> G[Human Review and Testing]
     B --> H[Clear Error Message]
+    I[Predefined Evaluation Profiles] --> J[Evaluation Harness]
+    C --> J
+    J --> K[Pass or Fail Report]
