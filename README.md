@@ -1,20 +1,27 @@
-# 🎵 Music Recommender Simulation
+# Applied AI System Project: Reliable Music Recommendation Assistant
 
 ## Project Summary
 
-In this project you will build and explain a small music recommender system.
+This project extends my **Module 3 Music Recommender Simulation** into a more
+complete applied AI system. The original project focused on a content-based
+music recommender that scored songs using features like genre, mood, energy,
+valence, and acousticness. It could rank songs for a user profile, explain why
+they matched, and show how weight changes affected recommendation results.
 
-Your goal is to:
+For Project 4, I am using that earlier recommender as the base system and
+turning it into a more professional AI assistant with stronger documentation,
+architecture, evaluation, and reliability features.
+
+The original Module 3 goals were to:
 
 - Represent songs and a user "taste profile" as data
 - Design a scoring rule that turns that data into recommendations
 - Evaluate what your system gets right and wrong
 - Reflect on how this mirrors real world AI recommenders
 
-My version will simulate a small content-based music recommender. Instead of
-using millions of real user actions like a streaming app, it will compare a
-listener's taste profile to each song's stored features and rank the closest
-matches with a clear explanation.
+This new version will keep the original scoring and recommendation workflow, but
+it will be expanded step by step into an applied AI system that is easier to
+trust, test, and explain.
 
 ---
 
