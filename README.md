@@ -126,8 +126,28 @@ Current result:
 
 ```text
 $ python -B -m pytest -q -p no:cacheprovider
-.......                                                                  [100%]
-7 passed in 0.04s
+........                                                                 [100%]
+8 passed in 0.05s
+```
+
+### Running the Reliability Evaluation
+
+Run the predefined evaluation profiles and guardrail check with:
+
+```bash
+python -m src.evaluate
+```
+
+This script reports whether each expected top recommendation is reproduced and
+whether an out-of-range energy value is rejected safely.
+
+```text
+$ python -B -m src.evaluate
+PASS: High-Energy Pop - expected Sunrise City; received Sunrise City; confidence 0.78
+PASS: Chill Lofi - expected Library Rain; received Library Rain; confidence 0.71
+PASS: Deep Intense Rock - expected Storm Runner; received Storm Runner; confidence 0.81
+PASS: Invalid energy guardrail - rejected invalid input: 'energy' must be a number from 0.0 to 1.0.
+Summary: 4/4 checks passed
 ```
 
 ---
@@ -178,10 +198,12 @@ which makes the weight trade-off visible instead of hidden.
 ### Testing Summary
 
 The automated suite checks CSV parsing, scoring, ranking, explanations, a
-weight-shift experiment, invalid input rejection, and the structure of the
-reliability result. All 7 tests pass. Manual command-line runs also confirmed
-that each of the three built-in profiles produces recommendations, confidence,
-and at least one guardrail message without crashing.
+weight-shift experiment, invalid input rejection, the reliability result, and
+the evaluation harness. The evaluation harness runs three fixed profiles and an
+invalid-energy guardrail check, then prints a pass/fail summary. Manual
+command-line runs also confirmed that each built-in profile produces
+recommendations, confidence, and at least one guardrail message without
+crashing.
 
 ---
 
