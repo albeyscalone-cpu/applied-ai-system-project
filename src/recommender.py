@@ -1,6 +1,6 @@
 import csv
 from dataclasses import asdict, dataclass
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 NUMERIC_FIELDS = {
     "energy",
@@ -23,6 +23,8 @@ DEFAULT_WEIGHTS = {
     "valence": VALENCE_WEIGHT,
     "acoustic": ACOUSTIC_WEIGHT,
 }
+
+MAX_SCORE = sum(DEFAULT_WEIGHTS.values())
 
 @dataclass
 class Song:
@@ -51,6 +53,73 @@ class UserProfile:
     favorite_mood: str
     target_energy: float
     likes_acoustic: bool
+
+
+def validate_user_preferences(user_prefs: Dict[str, Any]) -> Dict[str, Any]:
+    """Validate and normalize a profile before using it to rank songs.
+
+    The recommender is intentionally limited to values that can be compared to
+    the 0.0-1.0 song features in the catalog. Raising a clear error prevents a
+    plausible-looking recommendation from being produced from invalid input.
+    """
+    if not isinstance(user_prefs, dict):
+        raise ValueError("User preferences must be provided as a dictionary.")
+
+    normalized = user_prefs.copy()
+    for field in ("genre", "mood"):
+        value = normalized.get(field)
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError(f"'{field}' must be a non-empty string.")
+        normalized[field] = value.strip().lower()
+
+    for field, default in (("energy", None), ("valence", 0.5)):
+        value = normalized.get(field, default)
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ValueError(f"'{field}' must be a number from 0.0 to 1.0.")
+        if not 0.0 <= float(value) <= 1.0:
+            raise ValueError(f"'{field}' must be a number from 0.0 to 1.0.")
+        normalized[field] = float(value)
+
+    likes_acoustic = normalized.get("likes_acoustic", False)
+    if not isinstance(likes_acoustic, bool):
+        raise ValueError("'likes_acoustic' must be true or false.")
+    normalized["likes_acoustic"] = likes_acoustic
+    return normalized
+
+
+def assess_reliability(
+    recommendations: List[Tuple[Dict, float, str]],
+    catalog_size: int,
+) -> Dict[str, Any]:
+    """Estimate recommendation confidence and return review warnings.
+
+    Confidence is based on the top score's coverage of the available scoring
+    signals and its margin over the next result. It describes ranking certainty,
+    not whether a listener will personally enjoy the song.
+    """
+    if not recommendations:
+        return {
+            "score": 0.0,
+            "level": "low",
+            "warnings": ["No recommendations were available from the catalog."],
+        }
+
+    top_score = recommendations[0][1]
+    next_score = recommendations[1][1] if len(recommendations) > 1 else 0.0
+    score_coverage = top_score / MAX_SCORE
+    score_margin = max(0.0, top_score - next_score) / MAX_SCORE
+    confidence = round(min(1.0, 0.7 * score_coverage + 0.3 * score_margin), 2)
+    level = "high" if confidence >= 0.7 else "medium" if confidence >= 0.45 else "low"
+
+    warnings = []
+    if catalog_size < 25:
+        warnings.append("Small catalog: results may not represent the listener's full taste.")
+    if score_margin < 0.05:
+        warnings.append("Close scores: the top ranking could change with small preference updates.")
+    if "genre match" not in recommendations[0][2] and "mood match" not in recommendations[0][2]:
+        warnings.append("Top result has no exact genre or mood match; review before relying on it.")
+
+    return {"score": confidence, "level": level, "warnings": warnings}
 
 class Recommender:
     """
@@ -105,6 +174,7 @@ def score_song(
     weights: Dict[str, float] | None = None,
 ) -> Tuple[float, List[str]]:
     """Score one song against user preferences and explain the score."""
+    user_prefs = validate_user_preferences(user_prefs)
     active_weights = DEFAULT_WEIGHTS.copy()
     if weights:
         active_weights.update(weights)
@@ -144,9 +214,27 @@ def recommend_songs(
     weights: Dict[str, float] | None = None,
 ) -> List[Tuple[Dict, float, str]]:
     """Score every song and return the top k ranked recommendations."""
+    user_prefs = validate_user_preferences(user_prefs)
+    if not isinstance(k, int) or k < 1:
+        raise ValueError("'k' must be a positive integer.")
+
     scored = []
     for song in songs:
         score, reasons = score_song(user_prefs, song, weights=weights)
         scored.append((song, score, "; ".join(reasons)))
 
     return sorted(scored, key=lambda item: item[1], reverse=True)[:k]
+
+
+def recommend_with_reliability(
+    user_prefs: Dict[str, Any],
+    songs: List[Dict],
+    k: int = 5,
+    weights: Dict[str, float] | None = None,
+) -> Dict[str, Any]:
+    """Return recommendations together with a guardrail-based assessment."""
+    recommendations = recommend_songs(user_prefs, songs, k=k, weights=weights)
+    return {
+        "recommendations": recommendations,
+        "reliability": assess_reliability(recommendations, catalog_size=len(songs)),
+    }

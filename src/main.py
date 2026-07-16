@@ -9,7 +9,7 @@ You will implement the functions in recommender.py:
 - recommend_songs
 """
 
-from src.recommender import DEFAULT_WEIGHTS, load_songs, recommend_songs
+from src.recommender import DEFAULT_WEIGHTS, load_songs, recommend_with_reliability
 
 
 BASE_PROFILES = {
@@ -53,6 +53,13 @@ def print_recommendations(profile_name: str, recommendations: list[tuple], label
         print()
 
 
+def print_reliability(reliability: dict) -> None:
+    """Print confidence as a guardrail, not as a claim of listener enjoyment."""
+    print(f"Ranking confidence: {reliability['score']:.2f} ({reliability['level']})")
+    for warning in reliability["warnings"]:
+        print(f"Guardrail: {warning}")
+
+
 def main() -> None:
     songs = load_songs("data/songs.csv")
 
@@ -61,12 +68,13 @@ def main() -> None:
 
     for profile_name, user_prefs in BASE_PROFILES.items():
         print(f"\nUser profile: {profile_name} -> {user_prefs}")
-        recommendations = recommend_songs(user_prefs, songs, k=5)
-        print_recommendations(profile_name, recommendations, "base weights")
+        result = recommend_with_reliability(user_prefs, songs, k=5)
+        print_recommendations(profile_name, result["recommendations"], "base weights")
+        print_reliability(result["reliability"])
 
     experiment_profile_name = "High-Energy Pop"
     experiment_profile = BASE_PROFILES[experiment_profile_name]
-    experiment_recommendations = recommend_songs(
+    experiment_result = recommend_with_reliability(
         experiment_profile,
         songs,
         k=5,
@@ -79,9 +87,10 @@ def main() -> None:
     print(f"Experiment weights: {EXPERIMENT_WEIGHTS}")
     print_recommendations(
         experiment_profile_name,
-        experiment_recommendations,
+        experiment_result["recommendations"],
         "energy-first experiment",
     )
+    print_reliability(experiment_result["reliability"])
 
 
 if __name__ == "__main__":

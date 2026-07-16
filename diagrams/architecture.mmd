@@ -1,6 +1,8 @@
 flowchart TD
-    A[User Profile Input] --> B[Music Recommender App]
+    A[User Profile Input] --> B[Input Validation Guardrail]
     B --> C[Load Song Catalog]
-    B --> D[Score and Rank Songs]
-    D --> E[Recommendation Output]
-    E --> F[Human Review and Testing]
+    C --> D[Score and Rank Songs]
+    D --> E[Confidence and Warning Assessment]
+    E --> F[Recommendation Output]
+    F --> G[Human Review and Testing]
+    B --> H[Clear Error Message]

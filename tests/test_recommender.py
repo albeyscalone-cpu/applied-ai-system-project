@@ -3,6 +3,7 @@ from src.recommender import (
     Song,
     UserProfile,
     load_songs,
+    recommend_with_reliability,
     recommend_songs,
     score_song,
 )
@@ -115,3 +116,36 @@ def test_custom_weights_shift_high_energy_pop_order():
 
     assert baseline[1][0]["title"] == "Gym Hero"
     assert experiment[1][0]["title"] == "Rooftop Lights"
+
+
+def test_invalid_preference_energy_is_rejected():
+    songs = load_songs("data/songs.csv")
+    invalid_prefs = {
+        "genre": "pop",
+        "mood": "happy",
+        "energy": 1.4,
+        "likes_acoustic": False,
+    }
+
+    try:
+        recommend_songs(invalid_prefs, songs)
+    except ValueError as error:
+        assert "energy" in str(error)
+    else:
+        raise AssertionError("Invalid energy values should be rejected.")
+
+
+def test_reliability_result_includes_confidence_and_guardrails():
+    user_prefs = {
+        "genre": "pop",
+        "mood": "happy",
+        "energy": 0.8,
+        "valence": 0.8,
+        "likes_acoustic": False,
+    }
+    result = recommend_with_reliability(user_prefs, load_songs("data/songs.csv"), k=3)
+
+    assert len(result["recommendations"]) == 3
+    assert 0.0 <= result["reliability"]["score"] <= 1.0
+    assert result["reliability"]["level"] in {"low", "medium", "high"}
+    assert result["reliability"]["warnings"]
