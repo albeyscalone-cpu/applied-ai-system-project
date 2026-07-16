@@ -274,7 +274,8 @@ data quality, or cultural fit.
 
 ## Reflection
 
-Read and complete `model_card.md`:
+The detailed responsible-AI reflection, including limitations, safeguards,
+reliability findings, and AI collaboration notes, is in:
 
 [**Model Card**](model_card.md)
 
