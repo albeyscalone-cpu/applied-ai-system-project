@@ -10,7 +10,9 @@ they matched, and show how weight changes affected recommendation results.
 
 For Project 4, I am using that earlier recommender as the base system and
 turning it into a more professional AI assistant with stronger documentation,
-architecture, evaluation, and reliability features.
+architecture, evaluation, and reliability features. The applied-AI addition is
+a reliability layer that validates listener profiles before scoring and reports
+a confidence estimate plus clear guardrail warnings with each ranked result.
 
 The original Module 3 goals were to:
 
@@ -66,9 +68,21 @@ user_prefs = {
 Data flow sketch:
 
 ```text
-CSV song catalog -> load each row -> compare every song to user_prefs
--> calculate score and reasons -> sort by score -> print top recommendations
+User profile -> validation guardrail -> CSV song catalog -> scoring and ranking
+-> confidence assessment -> recommendations and review warnings
 ```
+
+### Architecture Overview
+
+The system first checks that profile values are valid for the catalog's 0.0 to
+1.0 numeric features. It then scores each song, ranks the results, and measures
+how strongly the top result is supported by the scoring signals and how far it
+is from the next result. The confidence score is a ranking-quality signal, not
+a claim that a person will definitely enjoy a song. Small catalogs and very
+close rankings produce warnings for the user to review.
+
+The editable Mermaid source is available in
+[`diagrams/architecture.mmd`](diagrams/architecture.mmd).
 
 Expected bias: because this is a small catalog, the system may over-favor genres
 or moods that appear more often. It also cannot understand lyrics, culture,
@@ -112,38 +126,62 @@ Current result:
 
 ```text
 $ python -B -m pytest -q -p no:cacheprovider
-.....                                                                    [100%]
-5 passed in 0.03s
+.......                                                                  [100%]
+7 passed in 0.04s
 ```
 
 ---
 
-## Sample Recommendation Output
+## Reproducible Execution Evidence
 
 ```text
 $ python -B -m src.main
 Loaded songs: 18
-User profile: genre=pop, mood=happy, energy=0.8, valence=0.8, likes_acoustic=False
 
-Top recommendations:
+Input: High-Energy Pop profile
+Top output: Sunrise City by Neon Echo - Score: 5.70
+Ranking confidence: 0.78 (high)
+Guardrail: Small catalog: results may not represent the listener's full taste.
 
-1. Sunrise City by Neon Echo - Score: 5.70
-Because: genre match (+2.00); mood match (+1.50); energy closeness (+0.98); valence closeness (+0.72); acoustic preference match (+0.50)
+Input: Chill Lofi profile
+Top output: Library Rain by Paper Lanterns - Score: 5.75
+Ranking confidence: 0.71 (high)
+Guardrail: Small catalog: results may not represent the listener's full taste.
+Guardrail: Close scores: the top ranking could change with small preference updates.
 
-2. Gym Hero by Max Pulse - Score: 4.10
-Because: genre match (+2.00); energy closeness (+0.87); valence closeness (+0.73); acoustic preference match (+0.50)
+Input: Deep Intense Rock profile
+Top output: Storm Runner by Voltline - Score: 5.72
+Ranking confidence: 0.81 (high)
+Guardrail: Small catalog: results may not represent the listener's full taste.
 
-3. Rooftop Lights by Indigo Parade - Score: 3.70
-Because: mood match (+1.50); energy closeness (+0.96); valence closeness (+0.74); acoustic preference match (+0.50)
-
-4. Desert Bloom by Maya Sol - Score: 2.08
-Because: energy closeness (+0.88); valence closeness (+0.70); acoustic preference match (+0.50)
-
-5. Thunder Arcade by Pixel Riot - Score: 2.07
-Because: energy closeness (+0.84); valence closeness (+0.73); acoustic preference match (+0.50)
+Invalid input check
+Input: energy=1.4
+Output: ValueError: 'energy' must be a number from 0.0 to 1.0.
 ```
 
-**Screenshot or video** *(optional)*: <!-- Insert a screenshot or demo video link here -->
+The application also runs an energy-first experiment for the High-Energy Pop
+profile. Its second-ranked result changes from `Gym Hero` to `Rooftop Lights`,
+which makes the weight trade-off visible instead of hidden.
+
+### Design Decisions
+
+- I kept the original content-based scoring model because every score and
+  explanation remains inspectable.
+- I added validation at the recommendation boundary so invalid values cannot
+  silently create misleading rankings.
+- I used a lightweight confidence calculation based on match coverage and the
+  gap between the first two results. This is easy to test and explain, but it
+  intentionally does not pretend to predict a listener's real enjoyment.
+- I display warnings rather than blocking valid low-confidence results, because
+  a human listener should be able to review a recommendation with its limits.
+
+### Testing Summary
+
+The automated suite checks CSV parsing, scoring, ranking, explanations, a
+weight-shift experiment, invalid input rejection, and the structure of the
+reliability result. All 7 tests pass. Manual command-line runs also confirmed
+that each of the three built-in profiles produces recommendations, confidence,
+and at least one guardrail message without crashing.
 
 ---
 
@@ -206,7 +244,9 @@ dominate the results. It also only understands structured features like genre,
 mood, energy, valence, and acousticness, not lyrics, context, or the listener's
 real behavior over time. During testing, I also noticed that a song like `Gym
 Hero` can rank high for very different profiles because energy and mood can
-outweigh genre when the numbers line up well.
+outweigh genre when the numbers line up well. The confidence score only measures
+support from this small scoring system; it cannot measure personal enjoyment,
+data quality, or cultural fit.
 
 ---
 
